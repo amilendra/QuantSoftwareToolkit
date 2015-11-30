@@ -295,7 +295,7 @@ class DataAccess(object):
                                 row[i]=float(item)
                         naData=np.vstack([np.array(row),naData])
                 else:
-                    naData = pkl.load (_file)
+                    naData = pa.read_pickle (_file)
                 _file.close()
             else:
                 naData = None
@@ -305,7 +305,7 @@ class DataAccess(object):
                 for sFile in lsDelPaths[-1:]:
                     ''' Changed to only use NEWEST data since sometimes there is overlap (JAVA) '''
                     inFile = open( sFile, "rb" )
-                    naPrepend = pkl.load( inFile )
+                    naPrepend = pa.read_pickle( inFile )
                     inFile.close()
                     
                     if naData == None:
@@ -480,7 +480,7 @@ class DataAccess(object):
                 try:
                     cachefile = open(cachefilename, "rb")
                     start = time.time() # start timer
-                    retval = pkl.load(cachefile)
+                    retval = pa.read_pickle(cachefilename)
                     elapsed = time.time() - start # end timer
                     readfile = True # remember success
                     cachefile.close()
