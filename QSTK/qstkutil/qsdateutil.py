@@ -21,11 +21,11 @@ import os
 import pandas as pd
 
 
-def _cache_dates():
+def _cache_dates(market="LKCSE"):
     ''' Caches dates '''
     try:
         # filename = os.environ['QS'] + "/qstkutil/NYSE_dates.txt"
-        filename = os.path.join(os.path.dirname(__file__), 'NYSE_dates.txt')
+        filename = os.path.join(os.path.dirname(__file__), '%s_dates.txt' % market)
     except KeyError:
         print "Please be sure you have NYSE_dates.txt in the qstkutil directory"
 
@@ -37,7 +37,9 @@ def _cache_dates():
 
 GTS_DATES = _cache_dates()
 
+def SetMarket(market="LKCSE"):
 
+    GTS_DATES = _cache_dates(market)
 
 def getMonthNames():
     return(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
@@ -118,8 +120,8 @@ def getLastOptionClose(day, trade_days):
     return(getNextOptionClose(day, trade_days))
 
 
-def getNYSEoffset(mark, offset):
-    ''' Returns NYSE date offset by number of days '''
+def getMarketOffset(mark, offset):
+    ''' Returns GTS_DATES date offset by number of days '''
     mark = mark.replace(hour=0, minute=0, second=0, microsecond=0)
     
     i = GTS_DATES.index.searchsorted(mark, side='right')
@@ -133,15 +135,15 @@ def getNYSEoffset(mark, offset):
 
     return ret
 
+def getNYSEoffset(mark, offset):
 
-def getNYSEdays(startday = dt.datetime(1964,7,5), endday = dt.datetime(2020,12,31),
+    return getMarketOffset(mark, offset)
+
+def getMarketDays(startday = dt.datetime(1964,7,5), endday = dt.datetime(2020,12,31),
     timeofday = dt.timedelta(0)):
     """
     @summary: Create a list of timestamps between startday and endday (inclusive)
-    that correspond to the days there was trading at the NYSE. This function
-    depends on a separately created a file that lists all days since July 4,
-    1962 that the NYSE has been open, going forward to 2020 (based
-    on the holidays that NYSE recognizes).
+    that correspond to the days there was trading at the GTS_DATES list.
 
     @param startday: First timestamp to consider (inclusive)
     @param endday: Last day to consider (inclusive)
@@ -157,7 +159,18 @@ def getNYSEdays(startday = dt.datetime(1964,7,5), endday = dt.datetime(2020,12,3
 
     return(ret)
 
-def getNextNNYSEdays(startday, days, timeofday):
+def getNYSEdays(startday = dt.datetime(1964,7,5), endday = dt.datetime(2020,12,31),
+    timeofday = dt.timedelta(0)):
+    """
+    @summary: Create a list of timestamps between startday and endday (inclusive)
+    that correspond to the days there was trading at the NYSE. This function
+    depends on a separately created a file that lists all days since July 4,
+    1962 that the NYSE has been open, going forward to 2020 (based
+    on the holidays that NYSE recognizes).
+    """
+    return getMarketDays(startday, endday, timeofday)
+
+def getNextNMarketdays(startday, days, timeofday, market="NYSE"):
     """
     @summary: Create a list of timestamps from startday that is days days long
     that correspond to the days there was trading at  NYSE. This function
@@ -170,7 +183,7 @@ def getNextNNYSEdays(startday, days, timeofday):
     """
     try:
         # filename = os.environ['QS'] + "/qstkutil/NYSE_dates.txt"
-        filename = os.path.join(os.path.dirname(__file__), 'NYSE_dates.txt')
+        filename = os.path.join(os.path.dirname(__file__), '%s_dates.txt' % market)
     except KeyError:
         print "Please be sure to set the value for QS in config.sh or\n"
         print "in local.sh and then \'source local.sh\'.\n"
@@ -183,7 +196,10 @@ def getNextNNYSEdays(startday, days, timeofday):
                 dates.append(dt.datetime.strptime(i,"%m/%d/%Y")+timeofday)
     return(dates)
 
-def getPrevNNYSEday(startday, timeofday):
+def getNextNNYSEday(startday, timeofday):
+    return getPrevNMarketday(startday, timeofday,"NYSE")
+
+def getPrevNMarketday(startday, timeofday, market="NYSE"):
     """
     @summary: This function returns the last valid trading day before the start
     day, or returns the start day if it is a valid trading day. This function
@@ -196,7 +212,7 @@ def getPrevNNYSEday(startday, timeofday):
     """
     try:
         # filename = os.environ['QS'] + "/qstkutil/NYSE_dates.txt"
-        filename = os.path.join(os.path.dirname(__file__), 'NYSE_dates.txt')
+        filename = os.path.join(os.path.dirname(__file__), '%s_dates.txt' % market)
     except KeyError:
         print "Please be sure to set the value for QS in config.sh or\n"
         print "in local.sh and then \'source local.sh\'.\n"
@@ -217,6 +233,10 @@ def getPrevNNYSEday(startday, timeofday):
         dtReturn = dtNext + timeofday
 
     return(dtReturn)
+
+
+def getPrevNNYSEday(startday, timeofday):
+    return getPrevNMarketday(startday, timeofday, "NYSE")
 
 def ymd2epoch(year, month, day):
     """

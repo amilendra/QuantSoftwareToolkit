@@ -31,6 +31,7 @@ class Exchange (object):
     OTC = 4
     DELISTED = 5
     NASDAQ = 6
+    LKCSE = 7
 
 
 class DataItem (object):
@@ -53,6 +54,7 @@ class DataSource(object):
     COMPUSTAT = "Compustat"
     CUSTOM = "Custom"
     MLT = "ML4Trading"
+    LKCSE = "LKCSE"
     #class DataSource ends
 
 
@@ -130,6 +132,11 @@ class DataAccess(object):
         elif (sourcein == DataSource.YAHOO):
             self.source = DataSource.YAHOO
             self.folderList.append(self.rootdir + "/Yahoo/")
+            self.fileExtensionToRemove = ".csv"
+
+        elif (sourcein == DataSource.LKCSE):
+            self.source = DataSource.LKCSE
+            self.folderList.append(self.rootdir + "/LKCSE/")
             self.fileExtensionToRemove = ".csv"
 
         elif (sourcein == DataSource.COMPUSTAT):
@@ -210,7 +217,7 @@ class DataAccess(object):
                     #incorrect value
                     raise ValueError ("Incorrect value for data_item %s"%sItem)
 
-            if( self.source == DataSource.MLT or self.source == DataSource.YAHOO):
+            if( self.source == DataSource.MLT or self.source == DataSource.YAHOO or self.source == DataSource.LKCSE):
                 if (sItem == DataItem.OPEN):
                     list_index.append(1)
                 elif (sItem == DataItem.HIGH):
@@ -236,7 +243,7 @@ class DataAccess(object):
             symbol_ctr = symbol_ctr + 1
             #print self.getPathOfFile(symbol)
             try:
-                if (self.source == DataSource.CUSTOM) or (self.source == DataSource.MLT)or (self.source == DataSource.YAHOO):
+                if (self.source == DataSource.CUSTOM) or (self.source == DataSource.MLT)or (self.source == DataSource.YAHOO) or (self.source == DataSource.LKCSE):
                     file_path= self.getPathOfCSVFile(symbol);
                 else:
                     file_path= self.getPathOfFile(symbol);
@@ -262,7 +269,7 @@ class DataAccess(object):
             assert( not _file == None or bIncDelist == True )
             ''' Open the file only if we have a valid name, otherwise we need delisted data '''
             if _file != None:
-                if (self.source==DataSource.CUSTOM) or (self.source==DataSource.YAHOO)or (self.source==DataSource.MLT):
+                if (self.source==DataSource.CUSTOM) or (self.source==DataSource.YAHOO)or (self.source==DataSource.MLT) or (self.source==DataSource.LKCSE):
                     creader = csv.reader(_file)
                     row=creader.next()
                     row=creader.next()
@@ -701,6 +708,14 @@ class DataAccess(object):
             retstr = retstr + "Attempts to load a custom data set, assuming each stock has\n"
             retstr = retstr + "a csv file with the name and first column as the stock ticker,\ date in second column, and data in following columns.\n"
             retstr = retstr + "everything should be located in QSDATA/Yahoo\n"
+            for i in self.folderSubList:
+                retstr = retstr + "\t" + i + "\n"
+
+        elif (self.source == DataSource.LKCSE):
+            retstr = "LKCSE:\n"
+            retstr = retstr + "Attempts to load a custom data set, assuming each stock has\n"
+            retstr = retstr + "a csv file with the name and first column as the stock ticker,\ date in second column, and data in following columns.\n"
+            retstr = retstr + "everything should be located in QSDATA/LKCSE\n"
             for i in self.folderSubList:
                 retstr = retstr + "\t" + i + "\n"
 
